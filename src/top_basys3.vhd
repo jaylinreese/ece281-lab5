@@ -57,29 +57,31 @@ component controller_fsm
             i_A  : in std_logic_vector (7 downto 0);
             i_B  : in std_logic_vector (7 downto 0);
             i_op  : in std_logic_vector (2 downto 0);
-            o_result  : in std_logic_vector (7 downto 0);
-            o_flags  : in std_logic_vector (3 downto 0)
+            o_result  : out std_logic_vector (7 downto 0);
+            o_flags  : out std_logic_vector (3 downto 0)
           );
     end component;
-    signal cycle     : std_logic_vector(3 downto 0);
+    
+    component sevenseg_decoder
+        Port (
+            i_val : in std_logic_vector(3 downto 0);
+            o_seg : out std_logic_vector(6 downto 0)
+        );
+    end component;
 
-    signal regA      : std_logic_vector(7 downto 0) := (others => '0');
-    signal regB      : std_logic_vector(7 downto 0) := (others => '0');
+    signal cycle       : std_logic_vector(3 downto 0);
 
-    signal alu_out   : std_logic_vector(7 downto 0);
-    signal alu_flags : std_logic_vector(3 downto 0); 
-          
-                        
+    signal regA        : std_logic_vector(7 downto 0) := (others => '0');
+    signal regB        : std_logic_vector(7 downto 0) := (others => '0');
 
-            
-        
-  
-	-- declare components and signals
+    signal alu_out     : std_logic_vector(7 downto 0);
+    signal alu_flags   : std_logic_vector(3 downto 0);
 
-  
+    signal display_val : std_logic_vector(3 downto 0);
+
 begin
-	-- PORT MAPS ----------------------------------------
 
+    -- FSM
     FSM0 : controller_fsm
         port map(
             i_reset => btnU,
@@ -87,22 +89,81 @@ begin
             o_cycle => cycle
         );
 
-	 ALU0 : ALU
-	   port map(
-	       i_A => regA,
-	       i_B => regB,
-	       i_op => sw(2 downto 0),
-	       o_result => alu_out,
-	       o_flags => alu_flags
-	      );
-	      
-	      process btn
-	      
-	      begin 
-	   
-	
-	-- CONCURRENT STATEMENTS ----------------------------
-	
-	
-	
+    -- ALU
+    ALU0 : ALU
+        port map(
+            i_A      => regA,
+            i_B      => regB,
+            i_op     => sw(2 downto 0),
+            o_result => alu_out,
+            o_flags  => alu_flags
+        );
+
+    -- Seven Segment Decoder
+    SSD0 : sevenseg_decoder
+        port map(
+            i_val => display_val,
+            o_seg => seg
+        );
+
+    -- Register Loading
+    process(btnC, btnU)
+    begin
+
+        if btnU = '1' then
+
+            regA <= (others => '0');
+            regB <= (others => '0');
+
+        elsif rising_edge(btnC) then
+
+            case cycle is
+
+                when "0010" =>
+                    regA <= sw;
+
+                when "0100" =>
+                    regB <= sw;
+
+                when others =>
+                    null;
+
+            end case;
+
+        end if;
+
+    end process;
+
+    -- Display Logic
+    process(cycle, regA, regB, alu_out)
+    begin
+
+        case cycle is
+
+            when "0001" =>
+                display_val <= "0000";
+
+            when "0010" =>
+                display_val <= regA(3 downto 0);
+
+            when "0100" =>
+                display_val <= regB(3 downto 0);
+
+            when "1000" =>
+                display_val <= alu_out(3 downto 0);
+
+            when others =>
+                display_val <= "0000";
+
+        end case;
+
+    end process;
+
+    -- LEDs
+    led(3 downto 0) <= cycle;
+    led(15 downto 12) <= alu_flags;
+
+    -- Enable rightmost seven segment
+    an <= "1110";
+
 end top_basys3_arch;
