@@ -39,49 +39,60 @@ entity ALU is
            o_flags : out STD_LOGIC_VECTOR (3 downto 0));
 end ALU;
 
-    
  architecture Behavioral of ALU is
 begin
 
     process(i_A, i_B, i_op)
 
-        variable temp : signed(7 downto 0);
+        variable temp9 : signed(8 downto 0);
+        variable temp8 : signed(7 downto 0);
 
     begin
 
         case i_op is
 
-            when "000" =>
-                temp := signed(i_A) + signed(i_B);
+            when "000" => -- ADD
+                temp9 := resize(signed(i_A),9) + resize(signed(i_B),9);
+                temp8 := temp9(7 downto 0);
 
-            when "001" =>
-                temp := signed(i_A) - signed(i_B);
+                o_flags(1) <= temp9(8);
 
-            when "010" =>
-                temp := signed(i_A and i_B);
+            when "001" => -- SUB
+                temp9 := resize(signed(i_A),9) - resize(signed(i_B),9);
+                temp8 := temp9(7 downto 0);
 
-            when "011" =>
-                temp := signed(i_A or i_B);
+                o_flags(1) <= temp9(8);
+
+            when "010" => -- AND
+                temp8 := signed(i_A and i_B);
+
+                o_flags(1) <= '0';
+
+            when "011" => -- OR
+                temp8 := signed(i_A or i_B);
+
+                o_flags(1) <= '0';
 
             when others =>
-                temp := (others => '0');
+                temp8 := (others => '0');
+
+                o_flags(1) <= '0';
 
         end case;
 
-        o_result <= std_logic_vector(temp);
+        o_result <= std_logic_vector(temp8);
 
-        -- NEGATIVE FLAG
-        o_flags(3) <= temp(7);
+        -- N flag
+        o_flags(3) <= temp8(7);
 
-        -- ZERO FLAG
-        if temp = 0 then
+        -- Z flag
+        if temp8 = 0 then
             o_flags(2) <= '1';
         else
             o_flags(2) <= '0';
         end if;
 
-        -- UNUSED FLAGS
-        o_flags(1) <= '0';
+        -- V flag
         o_flags(0) <= '0';
 
     end process;
