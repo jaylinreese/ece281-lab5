@@ -44,55 +44,55 @@ begin
 
     process(i_A, i_B, i_op)
 
-        variable temp9 : signed(8 downto 0);
-        variable temp8 : signed(7 downto 0);
+        variable temp9 : unsigned(8 downto 0);
+        variable result : std_logic_vector(7 downto 0);
 
     begin
 
         case i_op is
 
             when "000" => -- ADD
-                temp9 := resize(signed(i_A),9) + resize(signed(i_B),9);
-                temp8 := temp9(7 downto 0);
+                temp9 := unsigned('0' & i_A) + unsigned('0' & i_B);
+                result := std_logic_vector(temp9(7 downto 0));
 
                 o_flags(1) <= temp9(8);
 
             when "001" => -- SUB
-                temp9 := resize(signed(i_A),9) - resize(signed(i_B),9);
-                temp8 := temp9(7 downto 0);
+                temp9 := unsigned('0' & i_A) - unsigned('0' & i_B);
+                result := std_logic_vector(temp9(7 downto 0));
 
                 o_flags(1) <= temp9(8);
 
             when "010" => -- AND
-                temp8 := signed(i_A and i_B);
+                result := i_A and i_B;
 
                 o_flags(1) <= '0';
 
             when "011" => -- OR
-                temp8 := signed(i_A or i_B);
+                result := i_A or i_B;
 
                 o_flags(1) <= '0';
 
             when others =>
-                temp8 := (others => '0');
+                result := (others => '0');
 
                 o_flags(1) <= '0';
 
         end case;
 
-        o_result <= std_logic_vector(temp8);
+        o_result <= result;
 
-        -- N flag
-        o_flags(3) <= temp8(7);
+        -- N
+        o_flags(3) <= result(7);
 
-        -- Z flag
-        if temp8 = 0 then
+        -- Z
+        if result = "00000000" then
             o_flags(2) <= '1';
         else
             o_flags(2) <= '0';
         end if;
 
-        -- V flag
+        -- V
         o_flags(0) <= '0';
 
     end process;
