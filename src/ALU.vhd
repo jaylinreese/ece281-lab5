@@ -24,7 +24,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
@@ -39,9 +39,51 @@ entity ALU is
            o_flags : out STD_LOGIC_VECTOR (3 downto 0));
 end ALU;
 
-architecture Behavioral of ALU is
-
+    
+ architecture Behavioral of ALU is
 begin
 
+    process(i_A, i_B, i_op)
+
+        variable temp : signed(7 downto 0);
+
+    begin
+
+        case i_op is
+
+            when "000" =>
+                temp := signed(i_A) + signed(i_B);
+
+            when "001" =>
+                temp := signed(i_A) - signed(i_B);
+
+            when "010" =>
+                temp := signed(i_A and i_B);
+
+            when "011" =>
+                temp := signed(i_A or i_B);
+
+            when others =>
+                temp := (others => '0');
+
+        end case;
+
+        o_result <= std_logic_vector(temp);
+
+        -- NEGATIVE FLAG
+        o_flags(3) <= temp(7);
+
+        -- ZERO FLAG
+        if temp = 0 then
+            o_flags(2) <= '1';
+        else
+            o_flags(2) <= '0';
+        end if;
+
+        -- UNUSED FLAGS
+        o_flags(1) <= '0';
+        o_flags(0) <= '0';
+
+    end process;
 
 end Behavioral;
