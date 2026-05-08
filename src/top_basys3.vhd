@@ -43,6 +43,36 @@ entity top_basys3 is
 end top_basys3;
 
 architecture top_basys3_arch of top_basys3 is 
+
+component controller_fsm
+    Port (
+        i_reset : in std_logic;
+        i_adv   : in STD_LOGIC;
+        o_cycle : out STD_LOGIC_VECTOR (3 downto 0)
+        );
+       end component;
+       
+       component ALU
+         Port (
+            i_A  : in std_logic_vector (7 downto 0);
+            i_B  : in std_logic_vector (7 downto 0);
+            i_op  : in std_logic_vector (2 downto 0);
+            o_result  : in std_logic_vector (7 downto 0);
+            o_flags  : in std_logic_vector (3 downto 0)
+          );
+    end component;
+    signal cycle     : std_logic_vector(3 downto 0);
+
+    signal regA      : std_logic_vector(7 downto 0) := (others => '0');
+    signal regB      : std_logic_vector(7 downto 0) := (others => '0');
+
+    signal alu_out   : std_logic_vector(7 downto 0);
+    signal alu_flags : std_logic_vector(3 downto 0); 
+          
+                        
+
+            
+        
   
 	-- declare components and signals
 
@@ -50,7 +80,26 @@ architecture top_basys3_arch of top_basys3 is
 begin
 	-- PORT MAPS ----------------------------------------
 
-	
+    FSM0 : controller_fsm
+        port map(
+            i_reset => btnU,
+            i_adv   => btnC,
+            o_cycle => cycle
+        );
+
+	 ALU0 : ALU
+	   port map(
+	       i_A => regA,
+	       i_B => regB,
+	       i_op => sw(2 downto 0),
+	       o_result => alu_out,
+	       o_flags => alu_flags
+	      );
+	      
+	      process btn
+	      
+	      begin 
+	   
 	
 	-- CONCURRENT STATEMENTS ----------------------------
 	
