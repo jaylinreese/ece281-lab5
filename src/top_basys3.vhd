@@ -206,28 +206,36 @@ port map(
     o_sel  => an
 );
 
-process(btnC, btnU)
+process(clk)
 begin
 
-    if btnU = '1' then
+    if rising_edge(clk) then
 
-        regA <= (others => '0');
-        regB <= (others => '0');
+        if btnU = '1' then
 
-    elsif rising_edge(btnC) then
+            regA <= (others => '0');
+            regB <= (others => '0');
 
-        case cycle is
+        else
 
-            when "0010" =>
-                regA <= sw;
+            if btnC = '1' then
 
-            when "0100" =>
-                regB <= sw;
+                case cycle is
 
-            when others =>
-                null;
+                    when "0010" =>
+                        regA <= sw;
 
-        end case;
+                    when "0100" =>
+                        regB <= sw;
+
+                    when others =>
+                        null;
+
+                end case;
+
+            end if;
+
+        end if;
 
     end if;
 
