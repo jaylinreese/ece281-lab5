@@ -17,7 +17,7 @@
 --|					This provides more flexibility than simpler designs that use a bit from a 
 --|					clk bus (they only provide divisors of powers of 2).
 --|  
---| DOCUMENTATION : None
+--| DOCUMENTATION : I used level 3 gen AI to help answer questions undertsand topics and for feedback
 --|
 --+----------------------------------------------------------------------------
 --|

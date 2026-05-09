@@ -35,59 +35,85 @@ end ALU;
 architecture Behavioral of ALU is
 begin
 
+
     process(i_A, i_B, i_op)
 
-        variable a, b : unsigned(7 downto 0);
-        variable temp9 : unsigned(8 downto 0);
-        variable res : unsigned(7 downto 0);
+        variable a, b : signed(7 downto 0);
+        variable temp9 : signed(8 downto 0);
+        variable res : signed(7 downto 0);
 
     begin
 
-        a := unsigned(i_A);
-        b := unsigned(i_B);
+        a := signed(i_A);
+        b := signed(i_B);
 
-        -- default flag values (IMPORTANT)
         o_flags <= (others => '0');
 
         case i_op is
 
-            when "000" => -- ADD
+            -------------------------------------------------
+            -- ADD
+            -------------------------------------------------
+            when "000" =>
+
                 temp9 := ('0' & a) + ('0' & b);
                 res := temp9(7 downto 0);
 
-                o_flags(1) <= temp9(8); -- carry
+                -- Carry
+                o_flags(1) <= temp9(8);
 
-            when "001" => -- SUB
+                -- Overflow
+                if (a(7) = b(7)) and (res(7) /= a(7)) then
+                    o_flags(0) <= '1';
+                end if;
+
+            -------------------------------------------------
+            -- SUB
+            -------------------------------------------------
+            when "001" =>
+
                 temp9 := ('0' & a) - ('0' & b);
                 res := temp9(7 downto 0);
 
-                o_flags(1) <= not temp9(8); -- borrow = NOT carry
+                -- Carry / no borrow
+                o_flags(1) <= not temp9(8);
 
-            when "010" => -- AND
+                -- Overflow
+                if (a(7) /= b(7)) and (res(7) /= a(7)) then
+                    o_flags(0) <= '1';
+                end if;
+
+            -------------------------------------------------
+            -- AND
+            -------------------------------------------------
+            when "010" =>
+
                 res := a and b;
 
-            when "011" => -- OR
+            -------------------------------------------------
+            -- OR
+            -------------------------------------------------
+            when "011" =>
+
                 res := a or b;
 
             when others =>
+
                 res := (others => '0');
 
         end case;
 
         o_result <= std_logic_vector(res);
 
-        -- N flag
+        -- Negative flag
         o_flags(3) <= res(7);
 
-        -- Z flag
+        -- Zero flag
         if res = 0 then
             o_flags(2) <= '1';
         else
             o_flags(2) <= '0';
         end if;
-
-        -- V flag (not heavily tested in many labs)
-        o_flags(0) <= '0';
 
     end process;
 
